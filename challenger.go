@@ -76,8 +76,8 @@ func NewLndChallenger(cfg *AuthConfig, genInvoiceReq InvoiceRequestGenerator,
 	}
 
 	client, err := lndclient.NewBasicClient(
-		cfg.LndHost, cfg.TLSPath, cfg.MacDir, cfg.Network,
-		lndclient.MacFilename(invoiceMacaroonName),
+		cfg.LndHost, cfg.TLSPath, cfg.MacDir, "", "", cfg.Network,
+		false, false, lndclient.MacFilename(invoiceMacaroonName),
 	)
 	if err != nil {
 		return nil, err

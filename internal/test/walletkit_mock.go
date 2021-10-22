@@ -31,8 +31,8 @@ func (m *mockWalletKit) ListUnspent(ctx context.Context, minConfs,
 	return nil, nil
 }
 
-func (m *mockWalletKit) LeaseOutput(ctx context.Context, lockID wtxmgr.LockID,
-	op wire.OutPoint) (time.Time, error) {
+func (m *mockWalletKit) LeaseOutput(context.Context, wtxmgr.LockID,
+	wire.OutPoint, time.Duration) (time.Time, error) {
 
 	return time.Now(), nil
 }
