@@ -27,13 +27,13 @@ const (
 )
 
 var (
-	authRegex  = regexp.MustCompile("LSAT (.*?):([a-f0-9]{64})")
+	authRegex  = regexp.MustCompile("(?:LSAT|L402) (.*?):([a-f0-9]{64})")
 	authFormat = "LSAT %s:%s"
 )
 
 // FromHeader tries to extract authentication information from HTTP headers.
 // There are two supported formats that can be sent in three different header
-// fields:
+// fields. The <protocol> must be LSAT or L402.
 //  1. Authorization: LSAT <macBase64>:<preimageHex>
 //  2. Grpc-Metadata-Macaroon: <macHex>
 //  3. Macaroon: <macHex>

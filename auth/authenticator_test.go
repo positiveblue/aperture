@@ -100,10 +100,20 @@ func TestLsatAuthenticator(t *testing.T) {
 				result: false,
 			},
 			{
-				id: "valid auth header",
+				id: "valid LSAT auth header",
 				header: &http.Header{
 					lsat.HeaderAuthorization: []string{
 						"LSAT " + testMacBase64 + ":" +
+							testPreimage,
+					},
+				},
+				result: true,
+			},
+			{
+				id: "valid L402 auth header",
+				header: &http.Header{
+					lsat.HeaderAuthorization: []string{
+						"L402 " + testMacBase64 + ":" +
 							testPreimage,
 					},
 				},
