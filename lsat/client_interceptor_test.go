@@ -90,13 +90,47 @@ var (
 		expectMacaroonCall1: false,
 		expectMacaroonCall2: false,
 	}, {
-		name:            "auth required, no token yet",
+		name:            "auth required, no token yet, LSAT format",
 		initialPreimage: nil,
 		interceptor:     interceptor,
 		resetCb: func() {
 			resetBackend(
 				status.New(GRPCErrCode, GRPCErrMessage).Err(),
-				makeAuthHeader(testMacBytes),
+				makeAuthHeader("LSAT", testMacBytes),
+			)
+		},
+		expectLndCall: true,
+		sendPaymentCb: func(t *testing.T,
+			msg test.PaymentChannelMessage) {
+
+			require.Len(t, callMD, 0)
+
+			// The next call to the "backend" shouldn't return an
+			// error.
+			resetBackend(nil, "")
+			msg.Done <- lndclient.PaymentResult{
+				Preimage: paidPreimage,
+				PaidAmt:  123,
+				PaidFee:  345,
+			}
+		},
+		trackPaymentCb: func(t *testing.T,
+			msg test.TrackPaymentMessage) {
+
+			t.Fatal("didn't expect call to trackPayment")
+		},
+		expectToken:         true,
+		expectBackendCalls:  2,
+		expectMacaroonCall1: false,
+		expectMacaroonCall2: true,
+	}, {
+		name:            "auth required, no token yet, L402 format",
+		initialPreimage: nil,
+		interceptor:     interceptor,
+		resetCb: func() {
+			resetBackend(
+				status.New(GRPCErrCode, GRPCErrMessage).Err(),
+				makeAuthHeader("L402", testMacBytes),
 			)
 		},
 		expectLndCall: true,
@@ -140,7 +174,7 @@ var (
 		resetCb: func() {
 			resetBackend(
 				status.New(GRPCErrCode, GRPCErrMessage).Err(),
-				makeAuthHeader(testMacBytes),
+				makeAuthHeader("LSAT", testMacBytes),
 			)
 		},
 		expectLndCall: true,
@@ -171,7 +205,7 @@ var (
 		resetCb: func() {
 			resetBackend(
 				status.New(GRPCErrCode, GRPCErrMessage).Err(),
-				makeAuthHeader(testMacBytes),
+				makeAuthHeader("LSAT", testMacBytes),
 			)
 		},
 		expectLndCall:       true,
@@ -214,7 +248,7 @@ var (
 		resetCb: func() {
 			resetBackend(
 				status.New(GRPCErrCode, GRPCErrMessage).Err(),
-				makeAuthHeader(testMacBytes),
+				makeAuthHeader("LSAT", testMacBytes),
 			)
 		},
 		expectLndCall: false,
@@ -434,13 +468,13 @@ func serializeMac(mac *macaroon.Macaroon) []byte {
 	return macBytes
 }
 
-func makeAuthHeader(macBytes []byte) string {
+func makeAuthHeader(format string, macBytes []byte) string {
 	// Testnet invoice over 500 sats.
 	invoice := "lntb5u1p0pskpmpp5jzw9xvdast2g5lm5tswq6n64t2epe3f4xav43dyd" +
 		"239qr8h3yllqdqqcqzpgsp5m8sfjqgugthk66q3tr4gsqr5rh740jrq9x4l0" +
 		"kvj5e77nmwqvpnq9qy9qsq72afzu7sfuppzqg3q2pn49hlh66rv7w60h2rua" +
 		"hx857g94s066yzxcjn4yccqc79779sd232v9ewluvu0tmusvht6r99rld8xs" +
 		"k287cpyac79r"
-	return fmt.Sprintf("LSAT macaroon=\"%s\", invoice=\"%s\"",
-		base64.StdEncoding.EncodeToString(macBytes), invoice)
+	return fmt.Sprintf("%s macaroon=\"%s\", invoice=\"%s\"",
+		format, base64.StdEncoding.EncodeToString(macBytes), invoice)
 }
